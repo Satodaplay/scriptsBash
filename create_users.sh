@@ -1,6 +1,7 @@
 #!/bin/bash
 function usage(){
     echo "INSTRUCCIONS: ./create_users.sh USEAR_NAME [USER_NAME ... ]"
+    echo "EXECUTA COM A ROOT"
     exit 1
 }
 
@@ -20,12 +21,21 @@ echo "TOTS ELS PARAMETRES: ${TOTS_ELS_PARAMETRES}"
 
 # shift
 
-# TOTS_ELS_PARAMETRES=${*}
-# echo "TOTS ELS PARAMETRES: ${TOTS_ELS_PARAMETRES}"
+ TOTS_ELS_PARAMETRES=${*}
+echo "TOTS ELS PARAMETRES: ${TOTS_ELS_PARAMETRES}"
 
-for USER_NAME in ${@}
-do
+if [[ ${UID} -ne 0 ]]
+then
+    usage
+fi
+
+for USER_NAME in ${@}; do
     PASSWORD=$(date +%s%N | sha256sum | head -c10)
     echo "${USER_NAME}:${PASSWORD}"
-    sudo useradd ${USEAR_NAME} ${PASSWORD}
+
+    #Creacio usuari
+    useradd -m ${USER_NAME}
+    #Canviar el password
+    echo ${USER_NAME}:${PASSWORD} | chpasswd
+    passwd -e ${USER_NAME}
 done
